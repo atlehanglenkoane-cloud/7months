@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy 7 Months 💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: #1a0f0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', cursive;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #2e1a10 0%, #0d0604 100%);
+    z-index: 0;
+  }
+
+  .particle {
+    position: fixed;
+    background: rgba(210,170,100,0.4);
+    border-radius: 50%;
+    animation: float linear infinite;
+    z-index: 1;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.5; }
+    100% { transform: translateY(-10vh) translateX(30px); opacity: 0; }
+  }
+
+  #paper-ball {
+    position: relative;
+    z-index: 10;
+    width: 120px;
+    height: 120px;
+    cursor: pointer;
+    animation: idle-wobble 3s ease-in-out infinite;
+    transition: transform 0.2s;
+    filter: drop-shadow(0 10px 30px rgba(0,0,0,0.7));
+  }
+
+  #paper-ball:hover { transform: scale(1.08); }
+  #paper-ball svg { width: 100%; height: 100%; }
+
+  @keyframes idle-wobble {
+    0%, 100% { transform: rotate(-3deg) translateY(0); }
+    50% { transform: rotate(3deg) translateY(-8px); }
+  }
+
+  #tap-hint {
+    position: fixed;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(210,170,100,0.6);
+    font-family: 'Caveat', cursive;
+    font-size: 18px;
+    letter-spacing: 2px;
+    z-index: 10;
+    animation: pulse-hint 2s ease-in-out infinite;
+    transition: opacity 0.5s;
+  }
+
+  @keyframes pulse-hint {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  #uncrumple-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    padding: 20px;
+  }
+
+  #uncrumple-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  #letter-wrap {
+    position: relative;
+    z-index: 30;
+    width: min(600px, 92vw);
+    max-height: 92vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(150,100,30,0.3) transparent;
+    transform: scale(0.04) rotate(1080deg);
+    opacity: 0;
+    transform-origin: center center;
+    /* SLOWER uncrumple: 2.4s with gentle ease */
+    transition: transform 2.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.9s ease;
+    filter: drop-shadow(0 20px 60px rgba(0,0,0,0.8));
+  }
+
+  #letter-wrap.open {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+
+  /* Parchment base */
+  #letter {
+    background:
+      linear-gradient(160deg, #e8d5a3 0%, #d4b87a 20%, #e2c98e 40%, #c9a85c 60%, #ddc47a 80%, #c8a055 100%);
+    border-radius: 2px;
+    padding: 48px 52px 56px;
+    position: relative;
+    overflow: hidden;
+    min-height: 600px;
+  }
+
+  /* Aged dark corners */
+  #letter::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 0% 0%, rgba(80,40,5,0.55) 0%, transparent 45%),
+      radial-gradient(ellipse at 100% 0%, rgba(70,35,5,0.5) 0%, transparent 40%),
+      radial-gradient(ellipse at 0% 100%, rgba(80,45,5,0.6) 0%, transparent 45%),
+      radial-gradient(ellipse at 100% 100%, rgba(65,30,5,0.55) 0%, transparent 45%),
+      radial-gradient(ellipse at 30% 60%, rgba(140,90,20,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 30%, rgba(160,100,20,0.1) 0%, transparent 40%);
+    pointer-events: none;
+    border-radius: 2px;
+    z-index: 1;
+  }
+
+  /* Ruled lines */
+  .lines-overlay {
+    position: absolute;
+    inset: 48px 0 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 36px,
+      rgba(140,90,20,0.15) 36px,
+      rgba(140,90,20,0.15) 37px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* SVG crease lines drawn on top */
+  .crease-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Fold shadow strips */
+  .fold-h {
+    position: absolute;
+    left: 0; right: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .fold-v {
+    position: absolute;
+    top: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .letter-header {
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 5;
+  }
+
+  .letter-date {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: #7a4e1a;
+    letter-spacing: 1px;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  .letter-divider {
+    margin: 8px auto;
+    width: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #a07030, transparent);
+    transition: width 0.8s ease 0.3s;
+  }
+
+  #letter-text {
+    position: relative;
+    z-index: 5;
+    font-family: 'Caveat', cursive;
+    font-size: 21px;
+    line-height: 37px;
+    color: #3d1f05;
+    min-height: 300px;
+  }
+
+  .typed-char { opacity: 0; display: inline; }
+  .typed-char.show { opacity: 1; }
+
+  #cursor {
+    display: inline-block;
+    width: 2px;
+    height: 22px;
+    background: #5c2e08;
+    vertical-align: middle;
+    margin-left: 1px;
+    animation: blink 0.7s step-end infinite;
+    opacity: 0;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .floating-heart {
+    position: fixed;
+    font-size: 22px;
+    animation: rise-heart 3s ease-out forwards;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  @keyframes rise-heart {
+    0% { transform: translateY(0) scale(0.5); opacity: 1; }
+    100% { transform: translateY(-60vh) scale(1.2) rotate(20deg); opacity: 0; }
+  }
+
+  .stamp {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    width: 56px;
+    height: 56px;
+    border: 3px solid rgba(150,80,20,0.4);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    opacity: 0.7;
+    transform: rotate(8deg);
+    z-index: 5;
+  }
+
+  .seal {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 32px;
+    opacity: 0;
+    transition: opacity 1s;
+    position: relative;
+    z-index: 5;
+  }
+
+  #close-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    background: rgba(180,130,50,0.2);
+    border: 1px solid rgba(180,130,50,0.4);
+    color: rgba(210,170,100,0.8);
+    font-family: 'Caveat', cursive;
+    font-size: 18px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: none;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s;
+  }
+
+  /* Music player */
+  #music-player {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: rgba(20,10,5,0.75);
+    border: 1px solid rgba(180,130,50,0.35);
+    backdrop-filter: blur(8px);
+    border-radius: 30px;
+    padding: 8px 20px;
+    color: rgba(210,170,100,0.9);
+    font-family: 'Caveat', cursive;
+    font-size: 16px;
+  }
+  #music-player.visible { display: flex; }
+  #music-toggle { background:none; border:none; cursor:pointer; font-size:22px; line-height:1; padding:0; }
+  #music-label { letter-spacing:0.5px; white-space:nowrap; }
+
+  #close-btn:hover {
+    background: rgba(180,130,50,0.35);
+    color: #f0d090;
+  }
+</style>
+</head>
+<body>
+
+<script>
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (6 + Math.random() * 10) + 's';
+    p.style.animationDelay = (Math.random() * 8) + 's';
+    const sz = (1 + Math.random() * 3) + 'px';
+    p.style.width = sz; p.style.height = sz;
+    p.style.opacity = Math.random() * 0.5;
+    document.body.appendChild(p);
+  }
+</script>
+
+<div id="paper-ball" onclick="openLetter()">
+  <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="ballGrad" cx="40%" cy="35%">
+        <stop offset="0%" stop-color="#e8d5a3"/>
+        <stop offset="40%" stop-color="#c9a85c"/>
+        <stop offset="100%" stop-color="#7a5020"/>
+      </radialGradient>
+      <filter id="crumple">
+        <feTurbulence type="turbulence" baseFrequency="0.045" numOctaves="5" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+    <circle cx="60" cy="60" r="54" fill="url(#ballGrad)" filter="url(#crumple)"/>
+    <g stroke="rgba(80,45,5,0.4)" stroke-width="1.2" fill="none" filter="url(#crumple)">
+      <path d="M25,20 Q55,42 92,25"/>
+      <path d="M18,52 Q48,68 97,48"/>
+      <path d="M22,78 Q52,63 93,82"/>
+      <path d="M48,18 Q42,55 52,97"/>
+      <path d="M73,22 Q68,58 78,93"/>
+      <path d="M35,35 Q65,50 88,70"/>
+      <path d="M60,15 Q40,50 65,100"/>
+    </g>
+  </svg>
+</div>
+
+<div id="tap-hint">tap to open 💌</div>
+
+<div id="uncrumple-overlay">
+  <div id="letter-wrap">
+    <div id="letter">
+      <div class="lines-overlay"></div>
+
+      <!-- SVG crease lines for an aged, folded look -->
+      <svg class="crease-svg" viewBox="0 0 600 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Horizontal fold crease (thirds) -->
+        <line x1="0" y1="300" x2="600" y2="296" stroke="rgba(90,50,5,0.22)" stroke-width="2"/>
+        <line x1="0" y1="301" x2="600" y2="297" stroke="rgba(220,180,100,0.18)" stroke-width="1"/>
+        <line x1="0" y1="600" x2="600" y2="603" stroke="rgba(90,50,5,0.2)" stroke-width="2"/>
+        <line x1="0" y1="601" x2="600" y2="604" stroke="rgba(220,180,100,0.15)" stroke-width="1"/>
+        <!-- Vertical fold crease (half) -->
+        <line x1="300" y1="0" x2="298" y2="900" stroke="rgba(90,50,5,0.18)" stroke-width="1.5"/>
+        <line x1="301" y1="0" x2="299" y2="900" stroke="rgba(220,180,100,0.14)" stroke-width="1"/>
+        <!-- Diagonal wrinkles -->
+        <path d="M0,180 Q150,175 320,200 Q480,220 600,205" stroke="rgba(100,60,10,0.1)" stroke-width="1.5" fill="none"/>
+        <path d="M0,450 Q200,445 380,460 Q500,468 600,455" stroke="rgba(100,60,10,0.09)" stroke-width="1" fill="none"/>
+        <path d="M80,0 Q75,220 90,500 Q100,700 85,900" stroke="rgba(100,60,10,0.08)" stroke-width="1" fill="none"/>
+        <path d="M420,0 Q415,300 430,600 Q440,780 425,900" stroke="rgba(100,60,10,0.07)" stroke-width="1" fill="none"/>
+        <!-- Small random creases -->
+        <path d="M0,80 Q80,76 160,85" stroke="rgba(90,55,10,0.1)" stroke-width="1" fill="none"/>
+        <path d="M380,150 Q450,145 600,155" stroke="rgba(90,55,10,0.09)" stroke-width="1" fill="none"/>
+        <path d="M100,720 Q200,715 300,725" stroke="rgba(90,55,10,0.1)" stroke-width="1" fill="none"/>
+        <path d="M300,820 Q420,816 550,828" stroke="rgba(90,55,10,0.08)" stroke-width="1" fill="none"/>
+        <!-- Shadow on fold lines for depth -->
+        <line x1="0" y1="299" x2="600" y2="295" stroke="rgba(50,25,0,0.15)" stroke-width="3"/>
+        <line x1="0" y1="599" x2="600" y2="602" stroke="rgba(50,25,0,0.13)" stroke-width="3"/>
+        <line x1="299" y1="0" x2="297" y2="900" stroke="rgba(50,25,0,0.12)" stroke-width="2.5"/>
+      </svg>
+
+      <div class="stamp">💕</div>
+      <div class="letter-header">
+        <div class="letter-date" id="letter-date">May 31, 2026</div>
+        <div class="letter-divider" id="divider"></div>
+      </div>
+      <div id="letter-text"><span id="cursor"></span></div>
+      <div class="seal" id="seal">🌹💕🌹</div>
+    </div>
+  </div>
+</div>
+
+<button id="close-btn" onclick="closeLetter()">✕ close</button>
+
+<script>
+const message = `Happy 7 months babyyy boo 😝😝💕
+
+Im sooo glad we met and im so happy and grateful I got to experience these last 7 wonderful months with you and I dont say this enough but sometimes I think about you and get this unbearable feeling of how much more lost id feel if I lost you and im glad we chose to fix things and im deeply sorry on my part if I make it a difficult process. I really want to be with you and dont see myself with any other person other than you. I really love you and will stop at nothing until I understand every little thing about you babyy.
+
+And I know you say you find it difficult to communicate and that won't stop me. I love everything about you and nothing you do will ever change how I feel about you. I'm so excited and can't keep it off my mind how happy I am I get to have someone as wonderful as you. I would rather fix things 100 times over with you than start over with someone else.
+
+I hope that if anything ever comes up — like an argument or anything — we are able to solve it and push past it, because I would be really sad if I let a few hours of being angry ruin seven months of being happy.
+
+I can't wait to spend every day with you and see where this takes us, and I hope it never ends. Because being with you makes me feel less alone and im so glad I have someone to go back home to and talk to every single day. Someone who makes me feel this way and so happy.
+
+And I know I screw up sometimes and I really don't mean to. I'm really sorry I make you feel less understood sometimes and I'm working to get better at understanding you more.
+
+I love you so much Leesa and I hope we never end 💕`;
+
+let opened = false;
+
+function openLetter() {
+  if (opened) return;
+  opened = true;
+
+  const ball = document.getElementById('paper-ball');
+  ball.style.animation = 'none';
+  ball.style.transition = 'transform 0.6s ease-in, opacity 0.5s';
+  ball.style.transform = 'scale(0)';
+  ball.style.opacity = '0';
+  document.getElementById('tap-hint').style.opacity = '0';
+
+  const overlay = document.getElementById('uncrumple-overlay');
+  overlay.classList.add('active');
+
+  // Delay before starting uncrumple so ball disappears first
+  setTimeout(() => {
+    document.getElementById('letter-wrap').classList.add('open');
+
+    // Wait for uncrumple to mostly finish before typing
+    setTimeout(() => {
+      document.getElementById('letter-date').style.opacity = '1';
+      document.getElementById('divider').style.width = '120px';
+      document.getElementById('cursor').style.opacity = '1';
+      document.getElementById('close-btn').style.display = 'block';
+      startMusic();
+      typeMessage();
+    }, 1800);
+  }, 400);
+}
+
+function typeMessage() {
+  const cursor = document.getElementById('cursor');
+  const chars = [...message];
+  let i = 0;
+
+  function typeNext() {
+    if (i >= chars.length) {
+      cursor.style.display = 'none';
+      document.getElementById('seal').style.opacity = '1';
+      spawnHearts();
+      return;
+    }
+
+    const ch = chars[i++];
+
+    if (ch === '\n') {
+      cursor.before(document.createElement('br'));
+      if (chars[i] === '\n') {
+        cursor.before(document.createElement('br'));
+        i++;
+      }
+      setTimeout(typeNext, 80);
+    } else {
+      const span = document.createElement('span');
+      span.textContent = ch;
+      span.className = 'typed-char';
+      cursor.before(span);
+      requestAnimationFrame(() => span.classList.add('show'));
+
+      let delay = 32 + Math.random() * 20;
+      if (ch === '.' || ch === '!' || ch === '?') delay = 320;
+      else if (ch === ',' || ch === '—') delay = 160;
+      else if (ch === ' ') delay = 38;
+
+      setTimeout(typeNext, delay);
+    }
+  }
+
+  typeNext();
+}
+
+function spawnHearts() {
+  const emojis = ['💕','💗','🌹','💖','✨','💓'];
+  for (let i = 0; i < 14; i++) {
+    setTimeout(() => {
+      const h = document.createElement('div');
+      h.className = 'floating-heart';
+      h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      h.style.left = (10 + Math.random() * 80) + 'vw';
+      h.style.bottom = '10vh';
+      h.style.animationDelay = (Math.random() * 0.5) + 's';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 3500);
+    }, i * 180);
+  }
+}
+
+function closeLetter() { location.reload(); }
+
+// ---- MUSIC ----
+let musicPlaying = false;
+
+function startMusic() {
+  const audio = document.getElementById('music-audio');
+  audio.src = encodeURI('millkzy - THE NOTEBOOK (SPOTISAVER).mp3');
+  audio.loop = true;
+  audio.preload = 'auto';
+  audio.volume = 1.0;
+  audio.muted = false;
+  audio.autoplay = true;
+  audio.load();
+  audio.play().catch((err) => {
+    console.warn('Audio play blocked, retrying on next click.', err);
+  });
+  musicPlaying = true;
+  document.getElementById('music-player').classList.add('visible');
+  document.getElementById('music-toggle').textContent = '⏸';
+}
+
+function toggleMusic() {
+  const audio = document.getElementById('music-audio');
+  if (musicPlaying) {
+    audio.pause();
+    document.getElementById('music-toggle').textContent = '▶';
+    musicPlaying = false;
+  } else {
+    audio.volume = 1.0;
+    audio.muted = false;
+    audio.play().catch(() => {});
+    document.getElementById('music-toggle').textContent = '⏸';
+    musicPlaying = true;
+  }
+}
+
+</script>
+
+<audio id="music-audio" loop preload="auto" playsinline></audio>
+
+<!-- Music player bar -->
+<div id="music-player">
+  <button id="music-toggle" onclick="toggleMusic()" title="pause/play">⏸</button>
+  <span id="music-label">🎵 millkzy — THE NOTEBOOK</span>
+</div>
+
+</body>
+</html>
